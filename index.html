@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAREER.MN - Ирээдүйн Зам</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Manrope', sans-serif; background-color: #f3f4f6; }
+        .page { display: none; }
+        .page-active { display: block; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
+        .modal-active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .test-card { transition: all 0.3s ease; }
+        .test-card:hover { transform: translateY(-5px); background-color: #4338ca; color: white; }
+
+        #chatbot { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        #chat-window { display: none; width: 300px; height: 400px; background: white; border-radius: 20px; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid #e2e8f0; }
+        .chat-active { display: flex !important; }
+
+        .search-container:focus-within { border-color: #4338ca; box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1); }
+    </style>
+</head>
+<body onload="initApp()">
+
+    <nav class="bg-[#4338ca] text-white p-5 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="font-extrabold text-2xl tracking-tighter cursor-pointer" onclick="nav('home')">CAREER.MN</h1>
+            <div class="hidden lg:flex space-x-6 items-center">
+                <button onclick="nav('home')" class="hover:text-yellow-400 font-bold text-xs uppercase text-white">Нүүр</button>
+                <button onclick="nav('careers')" class="hover:text-yellow-400 font-bold text-xs uppercase text-white">Мэргэжил</button>
+                <button onclick="nav('colleges')" class="hover:text-yellow-400 font-bold text-xs uppercase text-white">Коллеж</button>
+                <button onclick="nav('links')" class="hover:text-yellow-400 font-bold text-xs uppercase text-white">Линк</button>
+                <button onclick="nav('psychology')" class="hover:text-yellow-400 font-bold text-xs uppercase text-white">Сэтгэл зүй</button>
+                <button onclick="openTest()" class="bg-white text-indigo-700 px-6 py-2.5 rounded-full font-black text-xs uppercase shadow-xl hover:bg-yellow-400 transition">Тест өгөх</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 p-4">
+        
+        <section id="home" class="page page-active">
+            <div class="bg-indigo-600 rounded-[40px] p-12 text-white text-center mb-16 shadow-2xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-4xl md:text-6xl font-black mb-6 uppercase italic leading-tight">Өөрийн замыг <br> зөв тодорхойл</h2>
+                    <button onclick="nav('careers')" class="bg-yellow-400 text-indigo-950 px-12 py-4 rounded-2xl font-black uppercase text-sm shadow-lg hover:scale-105 transition">Мэргэжил харах</button>
+                </div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
+            </div>
+
+            <div class="max-w-5xl mx-auto mb-10 border-l-4 border-indigo-600 pl-4">
+                <h3 class="text-2xl font-black uppercase italic">Сүүлийн үеийн постууд</h3>
+            </div>
+            <div id="posts-container" class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto"></div>
+        </section>
+
+        <section id="careers" class="page">
+            <div class="max-w-5xl mx-auto mb-10">
+                <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 search-container transition-all">
+                    <h2 class="text-2xl font-black text-indigo-900 mb-6 uppercase italic">🔍 Хайлт хийх</h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">1. Хичээлээр шүүх</label>
+                            <input type="text" id="subjectSearch" onkeyup="filterCareers()" placeholder="Жишээ: Физик, Математик..." 
+                            class="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent outline-none focus:bg-white focus:border-indigo-500 font-bold transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">2. Мэргэжлээр хайх</label>
+                            <input type="text" id="careerSearch" onkeyup="filterCareers()" placeholder="Жишээ: Инженер, Эмч..." 
+                            class="w-full p-5 rounded-2xl bg-slate-50 border-2 border-transparent outline-none focus:bg-white focus:border-indigo-500 font-bold transition-all">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="careers-container" class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto"></div>
+        </section>
+
+        <section id="colleges" class="page"><div id="colleges-container" class="grid md:grid-cols-3 gap-6"></div></section>
+        <section id="links" class="page"><div id="links-container" class="grid grid-cols-2 md:grid-cols-4 gap-6"></div></section>
+        <section id="psychology" class="page max-w-3xl mx-auto"><div id="psychology-container" class="space-y-6"></div></section>
+
+    </main>
+
+    <div id="testModal" class="modal items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-[50px] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-8 border-b flex justify-between items-center bg-slate-50">
+                <h2 id="modal-title" class="text-2xl font-black uppercase italic text-indigo-900">Сорил Сонгох</h2>
+                <button onclick="closeTest()" class="w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md hover:bg-red-500 hover:text-white transition">
+                    <span class="text-2xl font-bold">&times;</span>
+                </button>
+            </div>
+            <div class="p-8 overflow-y-auto flex-1">
+                <div id="modal-menu" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="modal-active-test" class="hidden">
+                    <div class="bg-indigo-50 p-8 rounded-[35px] mb-8"><p id="q-text" class="text-xl font-extrabold text-indigo-900 text-center"></p></div>
+                    <div id="q-options" class="grid gap-3"></div>
+                </div>
+                <div id="modal-result" class="hidden text-center p-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatbot">
+        <div id="chat-window" class="shadow-2xl overflow-hidden flex flex-col mb-4">
+            <div class="bg-indigo-600 p-4 text-white font-black text-xs uppercase flex justify-between">
+                <span>Career AI Туслах</span>
+                <button onclick="toggleChat()">&times;</button>
+            </div>
+            <div id="chat-content" class="flex-1 p-4 overflow-y-auto text-xs space-y-2 bg-slate-50">
+                <div class="bg-indigo-100 p-3 rounded-2xl text-indigo-800 font-bold">Сайн байна уу? Танд юугаар туслах вэ?</div>
+            </div>
+            <div class="p-3 border-t flex gap-2">
+                <input type="text" id="chat-input" placeholder="Асуух зүйлээ бичнэ үү..." class="flex-1 bg-slate-100 p-2 rounded-lg text-xs outline-none">
+                <button onclick="sendChat()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg font-bold text-[10px]">Илгээх</button>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="bg-indigo-600 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white text-2xl hover:scale-110 transition">💬</button>
+    </div>
+
+    <script>
+        const API_URL = "https://api.sheetbest.com/sheets/efc02d73-8ae0-4f15-a161-600fe48382a2";
+        let allCareersData = [], testStore = [], currentScore = 0, answeredCount = 0, currentQuestions = [];
+
+        async function initApp() {
+            loadPosts();
+            try {
+                const [cRes, clRes, lRes, pRes] = await Promise.all([
+                    fetch(`${API_URL}/tabs/Careers`),
+                    fetch(`${API_URL}/tabs/Colleges`),
+                    fetch(`${API_URL}/tabs/links`),
+                    fetch(`${API_URL}/tabs/Psychology`)
+                ]);
+
+                allCareersData = await cRes.json();
+                displayCareers(allCareersData);
+                
+                const collegeData = await clRes.json();
+                document.getElementById('colleges-container').innerHTML = collegeData.map(i => 
+                    `<div class="bg-white p-6 rounded-[30px] border-l-8 border-indigo-600 shadow-sm font-bold text-sm">${i['Мэргэжил']} <br> <span class="text-slate-400 text-xs">${i['Сургууль']}</span></div>`
+                ).join('');
+
+                const linkData = await lRes.json();
+                document.getElementById('links-container').innerHTML = linkData.map(i => 
+                    `<a href="${i['Холбоос']}" target="_blank" class="bg-white p-6 rounded-[30px] text-center block font-black text-[10px] uppercase shadow-sm hover:shadow-md transition">${i['Нэр']}</a>`
+                ).join('');
+
+                const psychologyData = await pRes.json();
+                document.getElementById('psychology-container').innerHTML = psychologyData.map(i => 
+                    `<div class="bg-white p-8 rounded-[35px] shadow-sm"><h4 class="font-black mb-4 text-indigo-900">❓ ${i['Асуулт']}</h4><p class="text-sm bg-indigo-50 p-6 rounded-2xl font-bold text-indigo-800">${i['Зөвлөмж']}</p></div>`
+                ).join('');
+            } catch(e) { console.error("Дата ачаалахад алдаа гарлаа"); }
+        }
+
+        async function loadPosts() {
+            try {
+                const res = await fetch(`${API_URL}/tabs/Posts`);
+                const data = await res.json();
+                const container = document.getElementById('posts-container');
+                // Баянхонгорын зургийн линк (Хэрэв хүснэгтэд зураг байхгүй бол ашиглах нөөц зураг)
+                const fallbackImg = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Bayankhongor_city.jpg/1200px-Bayankhongor_city.jpg";
+
+                container.innerHTML = data.map((i, index) => {
+                    const postId = `post-${index}`;
+                    const imgSrc = i['Зураг'] && i['Зураг'].trim() !== "" ? i['Зураг'] : fallbackImg;
+                    return `
+                    <div class="bg-white rounded-[40px] overflow-hidden shadow-sm border p-6 flex flex-col">
+                        <img src="${imgSrc}" class="w-full h-56 object-cover rounded-[30px] mb-5 shadow-sm" onerror="this.src='${fallbackImg}'">
+                        <h4 class="font-black text-xl mb-3 italic uppercase text-indigo-950">${i['Гарчиг']}</h4>
+                        <p class="text-slate-500 text-xs font-bold leading-relaxed mb-6">${i['Агуулга']}</p>
+                        <div class="mt-auto border-t pt-4">
+                            <div id="comments-list-${postId}" class="max-h-32 overflow-y-auto mb-4 space-y-2">
+                                <p class="text-[10px] text-slate-300 italic">Сэтгэгдэл байхгүй...</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="comment-input-${postId}" placeholder="Сэтгэгдэл бичих..." class="flex-1 bg-slate-100 p-3 rounded-xl text-[11px] outline-none font-bold">
+                                <button onclick="addComment('${postId}')" class="bg-indigo-600 text-white px-4 rounded-xl font-black text-[10px] uppercase">Илгээх</button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).reverse().join('');
+            } catch (err) { }
+        }
+
+        function filterCareers() {
+            const subjectVal = document.getElementById('subjectSearch').value.toLowerCase();
+            const careerVal = document.getElementById('careerSearch').value.toLowerCase();
+            const filtered = allCareersData.filter(i => {
+                const matchSub = (i['Хичээлүүд'] || "").toLowerCase().includes(subjectVal);
+                const matchCar = (i['Мэргэжил'] || "").toLowerCase().includes(careerVal);
+                return matchSub && matchCar;
+            });
+            displayCareers(filtered);
+        }
+
+        function displayCareers(data) {
+            document.getElementById('careers-container').innerHTML = data.map(i => `
+                <div class="bg-white p-8 rounded-[35px] shadow-sm hover:shadow-xl transition">
+                    <h3 class="font-black text-indigo-950 mb-3 uppercase italic text-sm">${i['Мэргэжил']}</h3>
+                    <div class="inline-block bg-indigo-100 text-indigo-600 text-[9px] font-black px-3 py-1 rounded-full mb-4 uppercase">${i['Хичээлүүд']}</div>
+                    <p class="text-[11px] text-slate-500 font-bold leading-relaxed">${i['Тайлбар']}</p>
+                </div>`).join('');
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+            document.getElementById(id).classList.add('page-active');
+            window.scrollTo(0,0);
+        }
+
+        function openTest() { document.getElementById('testModal').classList.add('modal-active'); resetTestState(); loadTestList(); }
+        function closeTest() { document.getElementById('testModal').classList.remove('modal-active'); }
+        function resetTestState() {
+            document.getElementById('modal-menu').classList.remove('hidden');
+            document.getElementById('modal-active-test').classList.add('hidden');
+            document.getElementById('modal-result').classList.add('hidden');
+            currentScore = 0; answeredCount = 0;
+        }
+
+        async function loadTestList() {
+            const menu = document.getElementById('modal-menu');
+            menu.innerHTML = "<p class='col-span-full text-center font-bold'>Уншиж байна...</p>";
+            const res = await fetch(`${API_URL}/tabs/Tests`);
+            testStore = await res.json();
+            const subs = [...new Set(testStore.map(i => i['Хичээл']))].filter(s => s);
+            menu.innerHTML = subs.map(s => `<button onclick="startModalTest('${s}')" class="test-card p-6 bg-slate-50 rounded-3xl font-black text-sm uppercase text-indigo-900 border shadow-sm">${s}</button>`).join('');
+        }
+
+        function startModalTest(sub) {
+            currentQuestions = testStore.filter(i => i['Хичээл'] === sub);
+            document.getElementById('modal-menu').classList.add('hidden');
+            document.getElementById('modal-active-test').classList.remove('hidden');
+            showNextQuestion();
+        }
+
+        function showNextQuestion() {
+            if (answeredCount >= currentQuestions.length) { showResult(); return; }
+            const q = currentQuestions[answeredCount];
+            document.getElementById('q-text').innerText = q['Асуулт'];
+            const opts = [q['Хувилбар1'], q['Хувилбар2'], q['Хувилбар3']].filter(o => o);
+            document.getElementById('q-options').innerHTML = opts.map(o => `<button onclick="checkAnswer('${q['Зөв']}', '${o}')" class="w-full p-4 bg-white border-2 rounded-2xl font-bold text-sm hover:border-indigo-600 transition text-left">${o}</button>`).join('');
+        }
+
+        function checkAnswer(correct, selected) {
+            if (String(correct).trim() === String(selected).trim()) currentScore++;
+            answeredCount++; showNextQuestion();
+        }
+
+        function showResult() {
+            document.getElementById('modal-active-test').classList.add('hidden');
+            const resArea = document.getElementById('modal-result');
+            resArea.classList.remove('hidden');
+            resArea.innerHTML = `<h3 class="text-4xl mb-4">🎯</h3><p class="text-xl font-black mb-2">Амжилттай!</p><p class="font-bold mb-6">Та ${currentQuestions.length}-аас ${currentScore} оноо авлаа.</p><button onclick="resetTestState(); loadTestList();" class="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs">Буцах</button>`;
+        }
+
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const list = document.getElementById(`comments-list-${postId}`);
+            if(!input.value.trim()) return;
+            if(list.innerHTML.includes('Сэтгэгдэл байхгүй')) list.innerHTML = '';
+            list.innerHTML += `<div class="bg-indigo-50 p-3 rounded-2xl text-[11px] font-bold border border-indigo-100"><span class="text-indigo-600">Зочин:</span> ${input.value}</div>`;
+            input.value = "";
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function toggleChat() { document.getElementById('chat-window').classList.toggle('chat-active'); }
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const content = document.getElementById('chat-content');
+            if(!input.value.trim()) return;
+            content.innerHTML += `<div class="bg-slate-200 p-3 rounded-2xl text-right font-bold ml-8">${input.value}</div>`;
+            setTimeout(() => {
+                content.innerHTML += `<div class="bg-indigo-100 p-3 rounded-2xl text-indigo-800 font-bold mr-8">Асуултыг хүлээн авлаа. Баярлалаа.</div>`;
+                content.scrollTop = content.scrollHeight;
+            }, 1000);
+            input.value = "";
+            content.scrollTop = content.scrollHeight;
+        }
+
+        setInterval(loadPosts, 60000);
+    </script>
+</body>
+</html>
